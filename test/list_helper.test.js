@@ -49,3 +49,37 @@ describe('favorite blog', () => {
     })
   })
 })
+
+describe('most blogs', () => {
+  const blogs = [
+    { author: 'A', likes: 1 },
+    { author: 'A', likes: 2 },
+    { author: 'B', likes: 5 }
+  ]
+
+  test('author with most blogs', () => {
+    const result = listHelper.mostBlogs(blogs)
+
+    assert.deepStrictEqual(result, {
+      author: 'A',
+      blogs: 2
+    })
+  })
+})
+
+describe('most likes', () => {
+  const blogs = [
+    { author: 'A', likes: 5 },
+    { author: 'A', likes: 7 },
+    { author: 'B', likes: 10 }
+  ]
+
+  test('author with most likes', () => {
+    const result = listHelper.mostLikes(blogs)
+
+    assert.deepStrictEqual(result, {
+      author: 'A',
+      likes: 12
+    })
+  })
+})
