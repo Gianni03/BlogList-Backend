@@ -128,6 +128,42 @@ describe('missing required fields', () => {
   })
 })
 
+describe('deletion of a blog', () => {
+  test('a blog can be deleted', async () => {
+    const blogsAtStart = await Blog.find({})
+    const blogToDelete = blogsAtStart[0]
+
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204)
+
+    const blogsAtEnd = await Blog.find({})
+    assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
+
+    const titles = blogsAtEnd.map(b => b.title)
+    assert(!titles.includes(blogToDelete.title))
+  })
+})
+
+describe('updating a blog', () => {
+  test('likes can be updated', async () => {
+    const blogsAtStart = await Blog.find({})
+    const blogToUpdate = blogsAtStart[0]
+
+    const updatedBlog = {
+      ...blogToUpdate.toJSON(),
+      likes: blogToUpdate.likes + 1
+    }
+
+    const response = await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(updatedBlog)
+      .expect(200)
+
+    assert.strictEqual(response.body.likes, blogToUpdate.likes + 1)
+  })
+})
+
 
 
 after(async () => {
