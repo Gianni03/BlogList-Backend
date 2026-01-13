@@ -66,12 +66,69 @@ describe('addition of a new blog', () => {
       .expect('Content-Type', /application\/json/)
 
     const response = await api.get('/api/blogs')
-    assert.strictEqual(response.body.length, 3)
+    assert.strictEqual(response.body.length, initialBlogs.length + 1)
 
     const titles = response.body.map(b => b.title)
     assert(titles.includes('Full Stack Open'))
   })
 })
+
+describe('unique identifier property is named id', async () => {
+  const response = await api.get('/api/blogs')
+  const blogs = response.body[0]
+
+  assert(blogs.id)
+  assert.strictEqual(blogs._id, undefined)
+})
+
+describe('default values', () => {
+  test('if likes is missing, it defaults to 0', async () => {
+    const newBlog = {
+      title: 'No likes yet',
+      author: 'Anonymous',
+      url: 'https://example.com/no-likes'
+      // 👈 likes NO está
+    }
+
+    const response = await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    assert.strictEqual(response.body.likes, 0)
+  })
+})
+
+describe('missing required fields', () => {
+  test('blog without title is not added', async () => {
+    const newBlog = {
+      author: 'No Title',
+      url: 'https://example.com/no-title',
+      likes: 5
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  })
+
+  test('blog without url is not added', async () => {
+    const newBlog = {
+      title: 'No URL',
+      author: 'No URL Author',
+      likes: 3
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  })
+})
+
+
 
 after(async () => {
   await mongoose.connection.close()
