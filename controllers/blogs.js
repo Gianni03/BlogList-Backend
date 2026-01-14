@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken')
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
@@ -8,19 +9,13 @@ blogsRouter.get('/', async (req, res) => {
 })
 
 blogsRouter.post('/', async (request, response) => {
-  const body = request.body
-
-  const user = await User.findOne({}) // cualquiera por ahora
-
-  if (!user) {
-    return response.status(400).json({ error: 'no users in database' })
-  }
+  const user = request.user
 
   const blog = new Blog({
-    title: body.title,
-    author: body.author,
-    url: body.url,
-    likes: body.likes || 0,
+    title: request.body.title,
+    author: request.body.author,
+    url: request.body.url,
+    likes: request.body.likes || 0,
     user: user._id
   })
 
@@ -32,9 +27,21 @@ blogsRouter.post('/', async (request, response) => {
   response.status(201).json(savedBlog)
 })
 
-blogsRouter.delete('/:id', async (req, res) => {
-  await Blog.findByIdAndDelete(req.params.id)
-  res.status(204).end()
+blogsRouter.delete('/:id', async (request, response) => {
+  const user = request.user
+  const blog = await Blog.findById(request.params.id)
+
+  if (!blog) {
+    return response.status(404).end()
+  }
+
+  if (blog.user.toString() !== user._id.toString()) {
+    return response.status(401).json({ error: 'only creator can delete blog' })
+  }
+
+  await Blog.findByIdAndDelete(request.params.id)
+
+  response.status(204).end()
 })
 
 blogsRouter.put('/:id', async (req, res) => {

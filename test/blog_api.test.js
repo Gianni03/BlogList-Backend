@@ -2,6 +2,7 @@ const { test, describe, beforeEach, after } = require('node:test')
 const assert = require('node:assert')
 const supertest = require('supertest')
 const mongoose = require('mongoose')
+const helper = require('./test_helper')
 
 const app = require('../app')
 const Blog = require('../models/blog')
@@ -164,6 +165,41 @@ describe('updating a blog', () => {
   })
 })
 
+describe('adding a blog with access token', () => {
+  test('a valid blog can be added with token', async () => {
+    const token = await helper.loginAndGetToken()
+
+    const newBlog = {
+      title: 'Token Blog',
+      author: 'Gianni',
+      url: 'http://test.com',
+      likes: 5
+    }
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+  })
+})
+
+describe('not providing a token when adding a new blog', () => {
+  test('adding a blog fails with 401 if token is not provided', async () => {
+  const newBlog = {
+    title: 'No Token Blog',
+    author: 'Nobody',
+    url: 'http://fail.com',
+    likes: 1
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(401)
+})
+})
 
 
 after(async () => {
