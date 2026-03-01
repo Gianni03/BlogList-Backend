@@ -27,10 +27,17 @@ mongoose
 app.use(cors())
 app.use(express.json())
 
-app.use(middleware.errorHandler)
-app.use(middleware.tokenExtractor)
-app.use('/api/blogs', middleware.userExtractor, blogsRouter)
-app.use('/api/users', usersRouter)
+app.use((req, res, next) => {
+  console.log('--- Nueva petición recibida ---')
+  console.log('Ruta:', req.path)
+  console.log('Método:', req.method)
+  next()
+})
+
 app.use('/api/login', loginRouter)
+app.use(middleware.tokenExtractor)
+app.use('/api/users', usersRouter)
+app.use('/api/blogs', middleware.userExtractor, blogsRouter)
+app.use(middleware.errorHandler)
 
 module.exports = app

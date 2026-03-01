@@ -12,14 +12,13 @@ const errorHandler = (error, request, response, next) => {
 }
 
 const tokenExtractor = (request, response, next) => {
+  console.log('--- Pasando por tokenExtractor ---')
   const authorization = request.get('authorization')
 
   if (authorization && authorization.startsWith('Bearer ')) {
     request.token = authorization.replace('Bearer ', '')
   }
-  if (!request.token) {
-    return response.status(401).json({ error: 'token missing' })
-  }
+
 
   next()
 }
